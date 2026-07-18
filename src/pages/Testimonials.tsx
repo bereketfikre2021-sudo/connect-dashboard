@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { useDndSensors } from '@/hooks/useDndSensors';
 import { useAutoOpen } from '@/hooks/useAutoOpen';
 import { useUnsavedWarning } from '@/hooks/useUnsavedWarning';
 import { useForm } from 'react-hook-form';
@@ -98,7 +99,7 @@ export default function Testimonials() {
     onError: () => toast.error('Failed to delete'),
   });
 
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+  const sensors = useDndSensors();
   const handleDndEnd = (e: DragEndEvent) => { if (e.over && e.active.id !== e.over.id) handleDragEnd(String(e.active.id), String(e.over.id)); };
 
   return (
@@ -123,7 +124,7 @@ export default function Testimonials() {
                 <SortableItem key={item.id} id={item.id} selected={isSelected(item.id)} onSelect={() => toggleSelect(item.id)}>
                   {(dragProps) => (
                     <div className="card flex flex-col sm:flex-row sm:items-start gap-3">
-                      <button type="button" {...dragProps} className="hidden sm:flex items-center justify-center w-5 text-gray-600 hover:text-gray-300 cursor-grab active:cursor-grabbing shrink-0 touch-none mt-1">
+                      <button type="button" {...dragProps} className="flex items-center justify-center w-8 h-8 text-gray-500 hover:text-gray-200 cursor-grab active:cursor-grabbing shrink-0 touch-none rounded-lg hover:bg-gray-700/50 transition-colors">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M4 8h16M4 16h16"/></svg>
                       </button>
                       <div className="w-10 h-10 rounded-full bg-gray-800 overflow-hidden shrink-0">

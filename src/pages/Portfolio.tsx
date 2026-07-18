@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
+import { useDndSensors } from '@/hooks/useDndSensors';
 import { useAutoOpen } from '@/hooks/useAutoOpen';
 import { useUnsavedWarning } from '@/hooks/useUnsavedWarning';
 import { useForm } from 'react-hook-form';
@@ -134,7 +135,7 @@ export default function Portfolio() {
     onError: () => toast.error('Failed to delete'),
   });
 
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+  const sensors = useDndSensors();
   const handleDndEnd = (e: DragEndEvent) => { if (e.over && e.active.id !== e.over.id) handleDragEnd(String(e.active.id), String(e.over.id)); };
 
   const grid = (
