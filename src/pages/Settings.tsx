@@ -57,7 +57,12 @@ export default function Settings() {
   });
 
   const { register, handleSubmit, formState: { isSubmitting } } = useForm<any>({ values: settings || {} });
-  const { register: regAccount, handleSubmit: handleAccount, formState: { isSubmitting: accountSaving } } = useForm<any>();
+  const { register: regAccount, handleSubmit: handleAccount, formState: { isSubmitting: accountSaving } } = useForm<any>({
+    defaultValues: {
+      name:  admin?.name  || '',
+      email: admin?.email || '',
+    },
+  });
 
   const saveMutation = useMutation({
     mutationFn: (data: any) => settingsService.update(data, logoFile || undefined, faviconFile || undefined),
@@ -74,7 +79,19 @@ export default function Settings() {
 
   const onAccountSubmit = async (data: any) => {
     try {
-      const updated = await authService.updateProfile(data);
+      // Only send fields that have values — don't send empty password
+      const payload: any = {};
+      if (data.name?.trim())     payload.name     = data.name.trim();
+      if (data.email?.trim())    payload.email    = data.email.trim();
+      if (data.password?.trim()) payload.password = data.password.trim();
+
+      // Nothing changed — skip the API call
+      if (Object.keys(payload).length === 0) {
+        toast.success('Nothing to update');
+        return;
+      }
+
+      const updated = await authService.updateProfile(payload);
       if (admin && accessToken) setAuth({ ...admin, ...updated.data?.data }, accessToken);
       toast.success('Account updated');
     } catch {
