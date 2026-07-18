@@ -38,6 +38,8 @@ export const portfolioService = {
   update: (id: string, data: Record<string, any>, image?: File) =>
     api.put(`/portfolio/${id}`, formData(data, image)),
   delete: (id: string) => api.delete(`/portfolio/${id}`),
+  reorder: (items: { id: string; displayOrder: number }[]) =>
+    api.put('/portfolio/reorder', { items }),
 };
 
 // ── Case Studies ──────────────────────────────────────────────────
@@ -49,6 +51,8 @@ export const caseStudyService = {
   update: (id: string, data: Record<string, any>, image?: File) =>
     api.put(`/case-studies/${id}`, formData(data, image)),
   delete: (id: string) => api.delete(`/case-studies/${id}`),
+  reorder: (items: { id: string; displayOrder: number }[]) =>
+    api.put('/case-studies/reorder', { items }),
 };
 
 // ── Blog ──────────────────────────────────────────────────────────
@@ -60,6 +64,8 @@ export const blogService = {
   update: (id: string, data: Record<string, any>, image?: File) =>
     api.put(`/blog/${id}`, formData(data, image)),
   delete: (id: string) => api.delete(`/blog/${id}`),
+  reorder: (items: { id: string; displayOrder: number }[]) =>
+    api.put('/blog/reorder', { items }),
 };
 
 // ── Trusted Brands ────────────────────────────────────────────────

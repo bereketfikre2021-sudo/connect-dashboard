@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -8,24 +8,41 @@ import { Settings as SettingsType } from '@/types';
 import PageHeader from '@/components/ui/PageHeader';
 import ImageUpload from '@/components/ui/ImageUpload';
 import { authService } from '@/services/auth.service';
+import { useAuthStore } from '@/store/authStore';
+
+const AVATAR_KEY = 'cd-admin-avatar';
 
 const TABS = [
-  { id: 'general',    label: 'General',    icon: '🌐' },
-  { id: 'seo',        label: 'SEO',        icon: '🔍' },
-  { id: 'social',     label: 'Social',     icon: '🔗' },
-  { id: 'cloudinary', label: 'Cloudinary', icon: '☁️' },
-  { id: 'security',   label: 'Security',   icon: '🔒' },
-  { id: 'account',    label: 'Account',    icon: '👤' },
-  { id: 'appearance', label: 'Appearance', icon: '🎨' },
+  { id: 'general',    label: 'General',    icon: 'globe'    },
+  { id: 'seo',        label: 'SEO',        icon: 'search'   },
+  { id: 'social',     label: 'Social',     icon: 'share'    },
+  { id: 'cloudinary', label: 'Cloudinary', icon: 'cloud'    },
+  { id: 'security',   label: 'Security',   icon: 'lock'     },
+  { id: 'account',    label: 'Account',    icon: 'user'     },
+  { id: 'appearance', label: 'Appearance', icon: 'swatch'   },
 ] as const;
 
 type TabId = typeof TABS[number]['id'];
+
+const TAB_ICON_PATHS: Record<string, string> = {
+  globe:  'M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+  search: 'M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z',
+  share:  'M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z',
+  cloud:  'M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z',
+  lock:   'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z',
+  user:   'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
+  swatch: 'M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01',
+};
 
 export default function Settings() {
   const qc = useQueryClient();
   const [searchParams] = useSearchParams();
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [faviconFile, setFaviconFile] = useState<File | null>(null);
+  const { admin, setAuth, accessToken } = useAuthStore();
+  const [avatarUrl, setAvatarUrl] = useState<string>(() => localStorage.getItem(AVATAR_KEY) || '');
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const getInitialTab = (): TabId => {
     const t = searchParams.get('tab');
@@ -57,11 +74,38 @@ export default function Settings() {
 
   const onAccountSubmit = async (data: any) => {
     try {
-      await authService.updateProfile(data);
+      const updated = await authService.updateProfile(data);
+      if (admin && accessToken) setAuth({ ...admin, ...updated.data?.data }, accessToken);
       toast.success('Account updated');
     } catch {
       toast.error('Failed to update account');
     }
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { toast.error('Photo must be under 2 MB'); return; }
+    setAvatarUploading(true);
+    const reader = new FileReader();
+    reader.onload = () => {
+      const url = reader.result as string;
+      setAvatarUrl(url);
+      localStorage.setItem(AVATAR_KEY, url);
+      // Notify UserMenu in the same tab
+      window.dispatchEvent(new Event('storage'));
+      toast.success('Profile photo updated');
+      setAvatarUploading(false);
+    };
+    reader.onerror = () => { toast.error('Failed to read file'); setAvatarUploading(false); };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const removeAvatar = () => {
+    setAvatarUrl('');
+    localStorage.removeItem(AVATAR_KEY);
+    window.dispatchEvent(new Event('storage'));
   };
 
   useEffect(() => { document.title = 'Settings · Connect Digitals'; }, []);
@@ -86,7 +130,9 @@ export default function Settings() {
                     : 'text-gray-400 hover:text-white hover:bg-gray-800'
                 }`}
               >
-                <span className="text-base">{tab.icon}</span>
+                <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d={TAB_ICON_PATHS[tab.icon]} />
+                </svg>
                 <span className="whitespace-nowrap">{tab.label}</span>
               </button>
             ))}
@@ -238,10 +284,19 @@ export default function Settings() {
               <div className="card space-y-3">
                 <h3 className="text-sm font-semibold text-white">Storage Tips</h3>
                 <ul className="space-y-2 text-sm text-gray-400">
-                  <li className="flex items-start gap-2"><span className="text-green-400 shrink-0">✓</span>Images are auto-optimised on upload</li>
-                  <li className="flex items-start gap-2"><span className="text-green-400 shrink-0">✓</span>Old images are deleted when replaced</li>
-                  <li className="flex items-start gap-2"><span className="text-green-400 shrink-0">✓</span>Max file size: 10 MB</li>
-                  <li className="flex items-start gap-2"><span className="text-green-400 shrink-0">✓</span>Supported: JPG, PNG, WebP, SVG, ICO</li>
+                  {[
+                    'Images are auto-optimised on upload',
+                    'Old images are deleted when replaced',
+                    'Max file size: 10 MB',
+                    'Supported: JPG, PNG, WebP, SVG, ICO',
+                  ].map((tip) => (
+                    <li key={tip} className="flex items-start gap-2">
+                      <svg className="w-4 h-4 text-green-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                      {tip}
+                    </li>
+                  ))}
                 </ul>
               </div>
             </div>
@@ -292,6 +347,46 @@ export default function Settings() {
           {/* ── Account ── */}
           {activeTab === 'account' && (
             <form onSubmit={handleAccount(onAccountSubmit)} className="space-y-6">
+              {/* Profile photo */}
+              <div className="card space-y-4">
+                <h2 className="text-sm font-semibold text-white mb-1">Profile Photo</h2>
+                <div className="flex items-center gap-5">
+                  {/* Avatar preview */}
+                  <div className="relative shrink-0">
+                    <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-700 border-2 border-gray-600 flex items-center justify-center">
+                      {avatarUrl ? (
+                        <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                      ) : (
+                        <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      )}
+                    </div>
+                    {avatarUploading && (
+                      <div className="absolute inset-0 rounded-full bg-black/60 flex items-center justify-center">
+                        <svg className="w-5 h-5 text-white animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <input ref={avatarInputRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={handleAvatarChange} />
+                    <button type="button" onClick={() => avatarInputRef.current?.click()} disabled={avatarUploading}
+                      className="btn-ghost text-xs px-3 py-1.5">
+                      {avatarUploading ? 'Uploading…' : 'Upload photo'}
+                    </button>
+                    {avatarUrl && (
+                      <button type="button" onClick={removeAvatar} className="text-xs text-rose-400 hover:text-rose-300 transition-colors">
+                        Remove photo
+                      </button>
+                    )}
+                    <p className="text-xs text-gray-600">PNG, JPG or WebP. Max 5 MB.</p>
+                  </div>
+                </div>
+              </div>
+
               <div className="card space-y-4">
                 <h2 className="text-sm font-semibold text-white mb-1">Admin Account</h2>
                 <div>

@@ -7,6 +7,18 @@ import App from './App';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import './styles/global.css';
 
+// ── Dynamic favicon from CMS settings ────────────────────────────
+export function applyFavicon(url: string | null | undefined) {
+  if (!url) return;
+  let link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+  if (!link) {
+    link = document.createElement('link');
+    link.rel = 'icon';
+    document.head.appendChild(link);
+  }
+  link.href = url;
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

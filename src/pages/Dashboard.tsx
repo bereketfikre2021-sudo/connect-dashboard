@@ -5,6 +5,16 @@ import { dashboardService, analyticsService } from '@/services/cms.service';
 import { DashboardStats, ActivityLogEntry } from '@/types';
 import { useAuthStore } from '@/store/authStore';
 
+// ── Inline icons ──────────────────────────────────────────────────
+const IFolder   = () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}><path strokeLinecap="round" strokeLinejoin="round" d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>;
+const IPen      = () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>;
+const IDoc      = () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>;
+const IImage    = () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>;
+const IStar     = () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}><path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>;
+const IChat     = () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}><path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>;
+const IMail     = () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>;
+const IChart    = () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}><path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>;
+
 const ENTITY_LABEL: Record<string, string> = {
   portfolio:       'Projects',
   blog:            'Blog',
@@ -58,8 +68,8 @@ function ActivityRow({ item }: { item: ActivityLogEntry }) {
 }
 
 // ── Compact stat card ─────────────────────────────────────────────
-function StatCard({ label, icon, total, published, to }: {
-  label: string; icon: string; total: number; published: number; to: string;
+function StatCard({ label, Icon, total, published, to }: {
+  label: string; Icon: () => JSX.Element; total: number; published: number; to: string;
 }) {
   const navigate = useNavigate();
   const pct = total > 0 ? Math.round((published / total) * 100) : 0;
@@ -69,11 +79,10 @@ function StatCard({ label, icon, total, published, to }: {
       className="group text-left bg-gray-900 border border-gray-800 rounded-xl p-4 hover:border-gray-700 hover:bg-gray-800/60 transition-all duration-150 hover:-translate-y-px"
     >
       <div className="flex items-center justify-between mb-2">
-        <span className="text-lg">{icon}</span>
+        <span className="text-gray-500 group-hover:text-gray-300 transition-colors"><Icon /></span>
         <span className="text-lg font-bold text-white tabular-nums">{total}</span>
       </div>
       <p className="text-xs font-medium text-gray-400 mb-2">{label}</p>
-      {/* Progress bar */}
       <div className="h-1 bg-gray-800 rounded-full overflow-hidden">
         <div className="h-full bg-primary/70 rounded-full transition-all" style={{ width: `${pct}%` }} />
       </div>
@@ -82,8 +91,8 @@ function StatCard({ label, icon, total, published, to }: {
   );
 }
 
-function SimpleCard({ label, icon, total, to, badge, sub }: {
-  label: string; icon: string; total: number; to: string; badge?: number; sub?: string;
+function SimpleCard({ label, Icon, total, to, badge, sub }: {
+  label: string; Icon: () => JSX.Element; total: number; to: string; badge?: number; sub?: string;
 }) {
   const navigate = useNavigate();
   return (
@@ -92,7 +101,7 @@ function SimpleCard({ label, icon, total, to, badge, sub }: {
       className="group text-left bg-gray-900 border border-gray-800 rounded-xl p-4 hover:border-gray-700 hover:bg-gray-800/60 transition-all duration-150 hover:-translate-y-px"
     >
       <div className="flex items-center justify-between mb-2">
-        <span className="text-lg">{icon}</span>
+        <span className="text-gray-500 group-hover:text-gray-300 transition-colors"><Icon /></span>
         <div className="flex items-center gap-1.5">
           {badge !== undefined && badge > 0 && (
             <span className="text-[10px] bg-blue-500 text-white px-1.5 py-0.5 rounded-full font-bold animate-pulse">{badge}</span>
@@ -136,14 +145,14 @@ export default function Dashboard() {
       ) : data ? (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            <StatCard  label="Projects"       icon="🗂️" total={data.counts.portfolioProjects} published={data.published.portfolioProjects} to="/portfolio" />
-            <StatCard  label="Blog Posts"     icon="✍️" total={data.counts.blogPosts}          published={data.published.blogPosts}         to="/blog" />
-            <StatCard  label="Case Studies"   icon="📋" total={data.counts.caseStudies}        published={data.published.caseStudies}       to="/case-studies" />
-            <SimpleCard label="Hero Slides"   icon="🖼️" total={data.counts.heroSlides}         to="/hero" />
-            <SimpleCard label="Trusted Brands"icon="🏆" total={data.counts.trustedBrands}      to="/trusted-brands" />
-            <SimpleCard label="Testimonials"  icon="💬" total={data.counts.testimonials}        to="/testimonials" />
-            <SimpleCard label="New Leads"     icon="📩" total={data.counts.newLeads}            to="/leads" badge={data.counts.newLeads} />
-            <SimpleCard label="Analytics"     icon="📈" total={analytics?.totals?.last7 ?? 0}   to="/analytics" sub="views (7d)" />
+            <StatCard  label="Projects"       Icon={IFolder} total={data.counts.portfolioProjects} published={data.published.portfolioProjects} to="/portfolio" />
+            <StatCard  label="Blog Posts"     Icon={IPen}    total={data.counts.blogPosts}          published={data.published.blogPosts}         to="/blog" />
+            <StatCard  label="Case Studies"   Icon={IDoc}    total={data.counts.caseStudies}        published={data.published.caseStudies}       to="/case-studies" />
+            <SimpleCard label="Hero Slides"    Icon={IImage}  total={data.counts.heroSlides}         to="/hero" />
+            <SimpleCard label="Trusted Brands" Icon={IStar}   total={data.counts.trustedBrands}      to="/trusted-brands" />
+            <SimpleCard label="Testimonials"   Icon={IChat}   total={data.counts.testimonials}       to="/testimonials" />
+            <SimpleCard label="New Leads"      Icon={IMail}   total={data.counts.newLeads}            to="/leads" badge={data.counts.newLeads} />
+            <SimpleCard label="Analytics"      Icon={IChart}  total={analytics?.totals?.last7 ?? 0}   to="/analytics" sub="views (7d)" />
           </div>
 
           {/* Recent Activity */}

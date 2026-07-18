@@ -1,5 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import Login from '@/pages/Login';
@@ -13,8 +15,23 @@ import Testimonials from '@/pages/Testimonials';
 import Leads from '@/pages/Leads';
 import Analytics from '@/pages/Analytics';
 import Settings from '@/pages/Settings';
+import { settingsService } from '@/services/cms.service';
+import { applyFavicon } from './main';
 
 export default function App() {
+  // Apply favicon and title from CMS settings
+  const { data: settings } = useQuery({
+    queryKey: ['settings'],
+    queryFn: async () => { const res = await settingsService.get(); return res.data.data; },
+    staleTime: 10 * 60 * 1000,
+  });
+
+  useEffect(() => {
+    if (settings?.favicon) applyFavicon(settings.favicon);
+    if (settings?.websiteName) {
+      document.title = `${settings.websiteName} — Admin`;
+    }
+  }, [settings?.favicon, settings?.websiteName]);
   return (
     <>
       <Toaster

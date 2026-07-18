@@ -28,6 +28,17 @@ export default function UserMenu() {
   const menuRef = useRef<HTMLDivElement>(null);
   const { admin, logout } = useAuthStore();
   const navigate = useNavigate();
+  const [avatarUrl, setAvatarUrl] = useState(() => localStorage.getItem('cd-admin-avatar') || '');
+
+  // Sync avatar when user updates it in Settings
+  useEffect(() => {
+    const onStorage = () => setAvatarUrl(localStorage.getItem('cd-admin-avatar') || '');
+    window.addEventListener('storage', onStorage);
+    // Also poll on focus so same-tab updates are reflected
+    const onFocus = () => setAvatarUrl(localStorage.getItem('cd-admin-avatar') || '');
+    window.addEventListener('focus', onFocus);
+    return () => { window.removeEventListener('storage', onStorage); window.removeEventListener('focus', onFocus); };
+  }, []);
 
   useEffect(() => {
     if (open && btnRef.current) {
@@ -62,9 +73,13 @@ export default function UserMenu() {
         onClick={() => setOpen((o) => !o)}
         className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-white/[0.05] transition-colors"
       >
-        {/* Avatar circle — solid bg so icon is always visible */}
-        <div className="w-7 h-7 rounded-full bg-gray-700 border border-gray-600 flex items-center justify-center shrink-0">
-          <Icon d={ICONS.person} className="w-4 h-4 text-gray-200" />
+        {/* Avatar circle */}
+        <div className="w-7 h-7 rounded-full bg-gray-700 border border-gray-600 flex items-center justify-center shrink-0 overflow-hidden">
+          {avatarUrl ? (
+            <img src={avatarUrl} alt={admin?.name} className="w-full h-full object-cover" />
+          ) : (
+            <Icon d={ICONS.person} className="w-4 h-4 text-gray-200" />
+          )}
         </div>
         <span className="text-sm text-gray-300 font-medium hidden sm:block max-w-[100px] truncate">{admin?.name}</span>
         <Icon d={ICONS.chevron} className={`w-3.5 h-3.5 text-gray-500 transition-transform duration-150 ${open ? 'rotate-180' : ''}`} />
@@ -77,9 +92,18 @@ export default function UserMenu() {
           className="w-52 bg-gray-900 border border-gray-800 rounded-xl shadow-2xl shadow-black/60 overflow-hidden"
         >
           {/* Header */}
-          <div className="px-4 py-3 border-b border-gray-800 bg-gray-800/40">
-            <p className="text-sm font-semibold text-white truncate">{admin?.name}</p>
-            <p className="text-xs text-gray-500 truncate">{admin?.email}</p>
+          <div className="px-4 py-3 border-b border-gray-800 bg-gray-800/40 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-gray-700 border border-gray-600 flex items-center justify-center shrink-0 overflow-hidden">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={admin?.name} className="w-full h-full object-cover" />
+              ) : (
+                <Icon d={ICONS.person} className="w-5 h-5 text-gray-300" />
+              )}
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-white truncate">{admin?.name}</p>
+              <p className="text-xs text-gray-500 truncate">{admin?.email}</p>
+            </div>
           </div>
 
           {/* Profile */}

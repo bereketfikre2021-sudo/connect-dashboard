@@ -106,7 +106,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-150 ${
                 isActive
-                  ? 'bg-primary/15 text-white font-medium'
+                  ? 'bg-gray-800 text-white font-medium border-l-2 border-indigo-500 pl-[10px]'
                   : 'text-gray-500 hover:text-gray-200 hover:bg-white/[0.04] font-normal'
               }`
             }
@@ -114,7 +114,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
             {({ isActive }) => (
               <>
                 <svg
-                  className={`w-4 h-4 shrink-0 transition-colors ${isActive ? 'text-primary' : 'text-gray-600 group-hover:text-gray-400'}`}
+                  className={`w-4 h-4 shrink-0 transition-colors ${isActive ? 'text-indigo-400' : 'text-gray-600 group-hover:text-gray-400'}`}
                   fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
