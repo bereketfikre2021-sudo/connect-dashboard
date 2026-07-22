@@ -3,7 +3,6 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import QuickActions from './QuickActions';
 import UserMenu from './UserMenu';
-import Notifications from './Notifications';
 import Breadcrumb from '@/components/ui/Breadcrumb';
 import CommandPalette from '@/components/ui/CommandPalette';
 
@@ -64,8 +63,6 @@ export default function DashboardLayout() {
           {/* Right side actions */}
           <div className="flex items-center gap-2 ml-auto">
             <QuickActions />
-            <div className="w-px h-5 bg-gray-800 hidden sm:block" />
-            <Notifications />
             <div className="w-px h-5 bg-gray-800 hidden sm:block" />
             <UserMenu />
           </div>

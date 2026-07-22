@@ -42,6 +42,7 @@ function LeadDetail({ lead, onClose }: { lead: ContactLead; onClose: () => void 
       await contactService.updateStatus(lead.id, status, notes);
       qc.invalidateQueries({ queryKey: ['leads'] });
       qc.invalidateQueries({ queryKey: ['lead-stats'] });
+      qc.invalidateQueries({ queryKey: ['notif-lead-stats'] });
       toast.success('Lead updated');
       onClose();
     } catch {

@@ -96,7 +96,10 @@ export const testimonialService = {
 
 // ── Analytics ─────────────────────────────────────────────────────
 export const analyticsService = {
-  getStats: () => api.get('/analytics/stats'),
+  getStats:    () => api.get('/analytics/stats'),
+  getGA4:      () => api.get('/analytics/ga4'),
+  getFull:     () => api.get('/analytics/full'),
+  getLive:     () => api.get('/analytics/live'),
 };
 
 // ── Contact Leads ─────────────────────────────────────────────────

@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { useRef, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { settingsService } from '@/services/cms.service';
+import { settingsService, contactService } from '@/services/cms.service';
 import toast from 'react-hot-toast';
 
 const navItems = [
@@ -31,6 +31,14 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
     queryFn: async () => { const res = await settingsService.get(); return res.data.data; },
     staleTime: 5 * 60 * 1000,
   });
+
+  const { data: leadStats } = useQuery({
+    queryKey: ['notif-lead-stats'],
+    queryFn: async () => { const res = await contactService.getStats(); return res.data.data; },
+    refetchInterval: 30 * 1000,
+  });
+
+  const newLeads: number = leadStats?.new ?? 0;
 
   const logoUrl = settings?.logo;
 
@@ -119,7 +127,12 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
                 </svg>
-                {item.label}
+                <span className="flex-1">{item.label}</span>
+                {item.to === '/leads' && newLeads > 0 && (
+                  <span className="min-w-[18px] h-[18px] bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1 leading-none">
+                    {newLeads > 9 ? '9+' : newLeads}
+                  </span>
+                )}
               </>
             )}
           </NavLink>

@@ -168,7 +168,7 @@ export default function Settings() {
                   <label className="label">Website Name</label>
                   <input {...register('websiteName')} className="input" placeholder="Connect Digitals" />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="label">Contact Email</label>
                     <input {...register('contactEmail')} type="email" className="input" />
@@ -178,7 +178,7 @@ export default function Settings() {
                     <input {...register('contactPhone')} className="input" placeholder="+251 9xx xxx xxx" />
                   </div>
                 </div>
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <ImageUpload label="Logo" currentUrl={settings?.logo} onChange={setLogoFile} circle />
                   <ImageUpload label="Favicon" currentUrl={settings?.favicon} onChange={setFaviconFile} accept="image/png,image/ico,image/x-icon,image/svg+xml" circle />
                 </div>
@@ -243,6 +243,93 @@ export default function Settings() {
                   <p className="text-xs text-gray-600 mt-1">Comma separated</p>
                 </div>
               </div>
+
+              {/* Sitemap & Robots card */}
+              <div className="card space-y-1">
+                <h3 className="text-sm font-semibold text-white mb-0.5">Sitemap &amp; Robots</h3>
+                <p className="text-xs text-gray-500 mb-3">Static files are deployed with the frontend build.</p>
+                {[
+                  {
+                    label: 'Sitemap',
+                    value: '/sitemap.xml',
+                    href: 'https://web.bereketfikre.et/sitemap.xml',
+                    mono: true,
+                  },
+                  {
+                    label: 'Robots.txt',
+                    value: '/robots.txt',
+                    href: 'https://web.bereketfikre.et/robots.txt',
+                    mono: true,
+                  },
+                  {
+                    label: 'OG Image',
+                    value: '/og-image.png (auto-generated on build)',
+                    href: 'https://web.bereketfikre.et/og-image.png',
+                    mono: false,
+                  },
+                ].map(({ label, value, href, mono }) => (
+                  <div key={label} className="flex items-center justify-between py-2.5 border-b border-gray-800 last:border-0">
+                    <span className="text-sm text-gray-400">{label}</span>
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`text-xs text-gray-300 hover:text-primary transition-colors ${mono ? 'font-mono' : 'font-semibold'}`}
+                    >
+                      {value}
+                    </a>
+                  </div>
+                ))}
+              </div>
+
+              {/* Google Analytics card */}
+              <div className="card space-y-1">
+                <div className="flex items-center justify-between mb-0.5">
+                  <h3 className="text-sm font-semibold text-white">Google Analytics 4</h3>
+                  <span className="flex items-center gap-1.5 text-xs text-green-400 font-medium">
+                    <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                    Active in production
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 mb-3">Tracking is enabled only in production builds. No data is collected during local development.</p>
+                {[
+                  { label: 'Measurement ID',   value: 'G-QJLP3X6KT3', mono: true  },
+                  { label: 'Integration',      value: 'react-ga4 v2.1.0', mono: true  },
+                  { label: 'Page Views',       value: 'Auto-tracked on every route', mono: false },
+                  { label: 'Custom Events',    value: 'Portfolio, Services, Contact, CTA', mono: false },
+                ].map(({ label, value, mono }) => (
+                  <div key={label} className="flex items-center justify-between py-2.5 border-b border-gray-800 last:border-0">
+                    <span className="text-sm text-gray-400">{label}</span>
+                    <span className={`text-xs text-gray-300 ${mono ? 'font-mono' : ''}`}>{value}</span>
+                  </div>
+                ))}
+                <div className="flex items-center gap-3 pt-3">
+                  <a
+                    href="https://analytics.google.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline font-medium"
+                  >
+                    Open GA4 Dashboard
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                  <span className="text-gray-700">·</span>
+                  <a
+                    href="https://analytics.google.com/analytics/web/#/p/debugView"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-primary hover:underline transition-colors"
+                  >
+                    DebugView
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                </div>
+              </div>
+
               <SaveButton saving={isSubmitting || saveMutation.isPending} />
             </form>
           )}
@@ -282,7 +369,7 @@ export default function Settings() {
                     { label: 'CLOUDINARY_API_SECRET', value: '••••••••••••••••••••••' },
                     { label: 'CLOUDINARY_FOLDER',     value: 'connect-digitals' },
                   ].map(({ label, value }) => (
-                    <div key={label} className="flex items-center justify-between gap-4">
+                    <div key={label} className="flex flex-wrap items-center justify-between gap-2">
                       <span className="text-xs font-mono text-gray-500">{label}</span>
                       <span className="text-xs font-mono text-gray-300">{value}</span>
                     </div>
@@ -335,7 +422,7 @@ export default function Settings() {
                     { label: 'Input Validation',         value: 'All endpoints', ok: true },
                     { label: 'XSS Protection',           value: 'Enabled',     ok: true },
                   ].map(({ label, value, ok }) => (
-                    <div key={label} className="flex items-center justify-between py-2 border-b border-gray-800 last:border-0">
+                    <div key={label} className="flex flex-wrap items-center justify-between gap-2 py-2 border-b border-gray-800 last:border-0">
                       <span className="text-sm text-gray-400">{label}</span>
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-gray-500">{value}</span>
